@@ -58,7 +58,7 @@ async def join(ctx):
         voice = await channel.connect()
         print(f"The bot has connected to {channel}\n")
         
-    await ctx.send(f"Joined {channel}")
+    await ctx.send(f"Joined {channel}.")
 
 @bot.command(brief="Bot leaves active voice channel.", description="Makes bot leave the voice channel, "
              + "if it's in one", aliases=['Leave'])
@@ -69,10 +69,10 @@ async def leave(ctx):
     if voice and voice.is_connected():
         await voice.disconnect()
         print(f"The bot has left {channel}")
-        await ctx.send(f"Left {channel}")
+        await ctx.send(f"Left {channel}.")
     else:
         print("Bot attempted to leave voice channel, was not in any to leave")
-        await ctx.send("Bot does not appear to be in any voice channels")
+        await ctx.send("Bot not in any channel.")
 
 @bot.command(brief = "Play a youtube video", description = "Makes the bot join the voice channel "
                     +  "you're in and plays a youtube video.", aliases=['p', 'P', 'Play'], category="Music")
