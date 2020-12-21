@@ -7,7 +7,7 @@ __pycache__/
 *.so
 
 #Init
-*.ini
+token.txt
 
 # Distribution / packaging
 .Python
