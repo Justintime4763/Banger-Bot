@@ -4,10 +4,10 @@ from discord.utils import get
 
 #INITIALIZATION, SETTING TOKENS, PREFIXES ETC.
 try:
-    TOKEN = open("token.ini", "r").read()
+    TOKEN = open('token.txt', 'r').read()
 except:
-    print("File does not exist; use your own token by deleting this try/except statement and just setting token as"
-          + " your own token")
+    print("File does not exist; use your own token by deleting this try/except"
+          + " statement and just setting token as your own token")
     time.sleep(5)
     sys.exit(1)
     
