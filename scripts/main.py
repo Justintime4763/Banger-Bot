@@ -15,7 +15,7 @@ except:
     sys.exit(1)
      
 BOT_PREFIX = '>'
-BOT_PLAYING = ''
+BOT_PLAYING = discord.Game("some banger music bro")
 
 help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
@@ -27,7 +27,7 @@ bot = commands.Bot(command_prefix=BOT_PREFIX, help_command=help_command)
 @bot.event
 async def on_ready():
     print("Logged in as " + bot.user.name + "\n")
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game("some banger music bro"))
+    await bot.change_presence(status=discord.Status.online, activity=BOT_PLAYING)
 
 # COMMANDS
 @bot.command(brief = "When the imposter is sus :joy:", description = "Meme command for testing out embedding images")
