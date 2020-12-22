@@ -1,11 +1,13 @@
 import discord, youtube_dl, os, time, sys
 from discord.ext import commands
 from discord.utils import get
+from docutils.nodes import description
 
 # INITIALIZATION, SETTING TOKENS, PREFIXES ETC.
 
 ydl_opts = {
     'format': 'bestaudio/best',
+    'quiet': True,
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'mp3',
@@ -31,7 +33,7 @@ except:
     sys.exit(1)
      
 BOT_PREFIX = '>'
-BOT_PLAYING = discord.Game("some banger music bro")
+BOT_PLAYING = discord.Game("some bangers")
 
 help_command = commands.DefaultHelpCommand(
     no_category='Commands'
@@ -65,7 +67,7 @@ async def join(ctx):
         channel = ctx.message.author.voice.channel
         voice = get(bot.voice_clients, guild=ctx.guild)
     except:
-        await ctx.send("You are not connected to a voice channel.")
+        await ctx.send("**You're not in any voice channels** :man_facepalming:")
         print("User tried to request voice bot, but was not in a voice channel")
         return
     
@@ -82,7 +84,7 @@ async def join(ctx):
         voice = await channel.connect()
         print(f"The bot has connected to {channel}\n")
         
-    await ctx.send(f"Joined {channel}.")
+    await ctx.send(f"**Joined {channel}!** :wave: :speaking_head:")
 
 
 @bot.command(brief="Bot leaves active voice channel.", description="Makes bot leave the voice channel, "
@@ -99,20 +101,23 @@ async def leave(ctx):
             channel = voice.channel
         await voice.disconnect()
         print(f"The bot has left {channel}")
-        await ctx.send(f"Left {channel}.")
+        await ctx.send(f"**Left {channel}!** :wave:")
     else:
         print("Bot attempted to leave voice channel, was not in any to leave")
-        await ctx.send("Bot not in any channel.")
+        await ctx.send("**Not in any voice channels** :shrug:")
 
 
 @bot.command(brief="Play a youtube video", description="Makes the bot join the voice channel "
                     +"you're in and plays a youtube video.", aliases=['p', 'P', 'Play'], category="Music")
 async def play(ctx, url: str):
     
-    try:
-        await join(ctx)
-    except:
-        pass
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    
+    if not voice and not voice.is_connected:
+        try:
+            await join(ctx)
+        except:
+            pass
     
     try:
         if os.path.isfile(os.path.join(src, "song.mp3")):
@@ -128,9 +133,9 @@ async def play(ctx, url: str):
                 +"because each video needs to downloaded to the computer, and large videos take up too much space.")
         return
      
-    await ctx.send("Downloading neccesary files...")
+    await ctx.send("**Downloading neccesary files...**")
      
-    voice = get(bot.voice_clients, guild=ctx.guild)
+    
      
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         print("Downloading audio now\n")
@@ -146,14 +151,48 @@ async def play(ctx, url: str):
                after=lambda e: print(f"{name} has finished playing"))
      
     voice.source = discord.PCMVolumeTransformer(voice.source)
-    voice.source.volume = 0.07
+    voice.source.volume = 1.0
      
     nname = name.rsplit("-", 2)
-    await ctx.send(f"Playing `{url}` in {voice.channel}!")
-    print(f"Playing `{url}` in {voice.channel}")
+    await ctx.send(f"**Playing** :notes: `{url}` in {voice.channel}!")
+    print(f"Playing `{url}` **in {voice.channel}**")
 
-async def skip(ctx):
-    pass
+
+@bot.command(brief="Pauses music", description="Pauses currently playing video in channel.")
+async def pause(ctx):
+    
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    if voice and voice.is_playing:
+        print(f"[{ctx.guild}] Music paused")
+        voice.pause()
+        await ctx.send("**Music paused!** :pause_button:")
+    else:
+        await ctx.send("**Nothing playing!** :shrug:")
+
+
+@bot.command(brief="Resumes music", description="Resumes previously paused video")
+async def resume(ctx):
+    
+    voice = get(bot.voice_clients, guild=ctx.guild)
+
+    if voice and voice.is_paused:
+        print(f"[{ctx.guild}] Resumed music")
+        await ctx.send("**Resuming music!** :notes:")
+        voice.resume()
+    else:
+        await ctx.send("**Nothing playing!** :shrug:")
+
+    
+@bot.command(brief="Stops music", description="Stops currently playing video")
+async def stop(ctx):
+    
+    voice = get(bot.voice_clients, guild=ctx.guild)
+    if voice and voice.is_playing:
+        print(f" [{ctx.guild}] Music stopped")
+        voice.stop()
+        await ctx.send("**Music stopped!** :mute:")
+    else:
+        await ctx.send("**Nothing playing!** :shrug:")
 
         
 bot.run(TOKEN)
