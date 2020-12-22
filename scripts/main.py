@@ -1,7 +1,6 @@
 import discord, youtube_dl, os, time, sys
 from discord.ext import commands
 from discord.utils import get
-from docutils.nodes import description
 
 # INITIALIZATION, SETTING TOKENS, PREFIXES ETC.
 
