@@ -33,17 +33,21 @@ async def on_ready():
 @bot.command(brief = "When the imposter is sus :joy:", description = "Meme command for testing out embedding images")
 async def mfw(ctx):
     with open(os.path.join(src, "sus.jpg"), 'rb') as f:
-        image = discord.File(f)
-        await ctx.send("when the imposter is sus :joy:", file=image)
+        await ctx.send("when the imposter is sus :joy:", file=discord.file(f))
 
 #TODO// FINISH PLAY COMMAND AND ADD VOLUME FUNCTIONALITY, PAUSE, SKIP, QUEUE ETC.
 @bot.command(brief = "Joins user's voice channel", description = "Makes the bot join the voice channel "
                     +  "the user is in.", aliases=['j', 'J', 'Join'])
-
 async def join(ctx):
     global voice
-    channel = ctx.message.author.voice.channel
-    voice = get(bot.voice_clients, guild=ctx.guild)
+    
+    try:
+        channel = ctx.message.author.voice.channel
+        voice = get(bot.voice_clients, guild=ctx.guild)
+    except:
+        await ctx.send("You are not connected to a voice channel.")
+        print("User tried to request voice bot, but was not in a voice channel")
+        return
     
     if voice and voice.isConnected():
         await voice.move_to(channel)
@@ -63,10 +67,15 @@ async def join(ctx):
 @bot.command(brief="Bot leaves active voice channel.", description="Makes bot leave the voice channel, "
              + "if it's in one", aliases=['Leave'])
 async def leave(ctx):
-    channel = ctx.message.author.voice.channel
+    try:
+        channel = ctx.message.author.voice.channel
+    except:
+        channel = None
     voice = get(bot.voice_clients, guild=ctx.guild)
     
     if voice and voice.is_connected():
+        if channel is None:
+            channel = voice.channel
         await voice.disconnect()
         print(f"The bot has left {channel}")
         await ctx.send(f"Left {channel}.")
