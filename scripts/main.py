@@ -21,11 +21,27 @@ def video_size(url):
         dictMeta = ydl.extract_info(url, download=False)
         return dictMeta['duration']
 
+def video_name(url):
+    with youtube_dl.YoutubeDL() as ydl:
+        dictMeta = ydl.extract_info(url, download=False)
+        return dictMeta['title']
+
 def yt_firstresult(s):
     link = urllib.request.urlopen('https://www.youtube.com/results?search_query=' 
                                   + (s.replace(" ", "+")).replace("/", "\\"))
     video_ids = re.findall(r"watch\?v=(\S{11})", link.read().decode())
     return "https://www.youtube.com/watch?v=" + video_ids[0]
+
+def is_url(s):
+    regex = re.compile(
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    
+    return re.match(regex, s) is not None
 
 src = os.path.abspath('../src/')
  
@@ -74,7 +90,7 @@ async def join(ctx):
     except:
         await ctx.send("**You're not in any voice channels** :man_facepalming:")
         print("User tried to request voice bot, but was not in a voice channel")
-        return
+        return 0
     
     if voice and voice.isConnected():
         await voice.move_to(channel)
@@ -90,6 +106,7 @@ async def join(ctx):
         print(f"[{ctx.guild}] Joined channel\n")
         
     await ctx.send(f"**Joined {channel}!** :wave: :speaking_head:")
+    return 1
 
 
 @bot.command(brief="Bot leaves active voice channel.", description="Makes bot leave the voice channel, "
@@ -114,13 +131,20 @@ async def leave(ctx):
 
 @bot.command(brief="Play a youtube video", description="Makes the bot join the voice channel "
                     +"you're in and plays a youtube video.", aliases=['p', 'P', 'Play'], category="Music")
-async def play(ctx, url: str):
+async def play(ctx, *args):
+    
+    url = args[0]
+    
+    if not (is_url(url)):
+        await search(ctx, " ".join(args))
+        return
     
     voice = get(bot.voice_clients, guild=ctx.guild)
     
     if not voice:
         try:
-            await join(ctx)
+            if await join(ctx) == 0:
+                return
         except:
             pass
         
@@ -161,8 +185,8 @@ async def play(ctx, url: str):
     voice.source.volume = 1.0
      
     nname = name.rsplit("-", 2)
-    await ctx.send(f"**Playing** :notes: `{url}`** in {voice.channel}!**")
-    print(f"Playing `{url}` **in {voice.channel}**")
+    await ctx.send(f"**Playing** :notes: `{(video_name(url))}`** in {voice.channel}!**")
+    print(f"[{ctx.guild}] Playing {video_name(url)} in {voice.channel}")
 
 
 @bot.command(brief="Pauses music", description="Pauses currently playing video in channel.")
@@ -205,8 +229,6 @@ async def stop(ctx):
 async def search(ctx, *args):
     
     keywords = " ".join(args)
-    
-    await ctx.send("**Querying youtube...**")
     
     link = yt_firstresult(keywords)
     
