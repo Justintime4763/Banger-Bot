@@ -96,15 +96,11 @@ async def join(ctx):
         print("User tried to request voice bot, but was not in a voice channel")
         return 0
     
-    if voice and voice.isConnected():
+    if voice and voice.is_connected() and not channel == voice.channel:
         await voice.move_to(channel)
-    else:
-        voice = await channel.connect()
-        
-    await voice.disconnect()
-    
-    if voice and voice.is_connected():
-        await voice.move_to(channel)
+    elif voice and voice.is_connected():
+        await ctx.send("**Bot already in that channel** :shrug:")
+        return
     else:
         voice = await channel.connect()
         print(f"[{ctx.guild}] Joined channel\n")
@@ -138,6 +134,7 @@ async def leave(ctx):
                     +"you're in and plays a youtube video.", aliases=['p', 'P', 'Play'], category="Music")
 async def play(ctx, *args):
     
+    global queue
     url = args[0]
     
     if not (is_url(url)):
@@ -262,5 +259,8 @@ async def volume(ctx, vol: str):
     except:
         await ctx.send("**Volume invalid** :shrug:")
 
-    
+#NON-COMMAND ASYNC FUNCS
+async def add_to_queue(ctx, url: str):
+    pass
+
 bot.run(TOKEN)
