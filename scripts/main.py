@@ -21,27 +21,31 @@ def video_size(url):
         dictMeta = ydl.extract_info(url, download=False)
         return dictMeta['duration']
 
+
 def video_name(url):
     with youtube_dl.YoutubeDL() as ydl:
         dictMeta = ydl.extract_info(url, download=False)
         return dictMeta['title']
 
+
 def yt_firstresult(s):
     link = urllib.request.urlopen('https://www.youtube.com/results?search_query=' 
-                                  + (s.replace(" ", "+")).replace("/", "\\"))
+                                  +(s.replace(" ", "+")).replace("/", "\\"))
     video_ids = re.findall(r"watch\?v=(\S{11})", link.read().decode())
     return "https://www.youtube.com/watch?v=" + video_ids[0]
 
+
 def is_url(s):
     regex = re.compile(
-        r'^(?:http|ftp)s?://' # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
-        r'localhost|' #localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-        r'(?::\d+)?' # optional port
+        r'^(?:http|ftp)s?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     
     return re.match(regex, s) is not None
+
 
 src = os.path.abspath('../src/')
  
@@ -78,7 +82,7 @@ async def mfw(ctx):
         await ctx.send("when the imposter is sus :joy:", file=discord.File(f))
 
 
-# TODO// FINISH PLAY COMMAND AND ADD VOLUME FUNCTIONALITY, PAUSE, SKIP, QUEUE ETC.
+# TODO/ QUEUE
 @bot.command(brief="Joins user's voice channel", description="Makes the bot join the voice channel "
                     +"the user is in.", aliases=['j', 'J', 'Join'])
 async def join(ctx):
@@ -105,6 +109,7 @@ async def join(ctx):
         voice = await channel.connect()
         print(f"[{ctx.guild}] Joined channel\n")
         
+    voice.stop()
     await ctx.send(f"**Joined {channel}!** :wave: :speaking_head:")
     return 1
 
@@ -141,12 +146,18 @@ async def play(ctx, *args):
     
     voice = get(bot.voice_clients, guild=ctx.guild)
     
+    ### TODO ADD QUEUE HERE
     if not voice:
         try:
             if await join(ctx) == 0:
                 return
         except:
             pass
+    else:
+        if voice.is_playing():
+            #CALL Q FUNCTION HERE
+            await ctx.send("**Bot already playing a video** :shrug:")
+            return
         
     voice = get(bot.voice_clients, guild=ctx.guild)
     
@@ -165,8 +176,6 @@ async def play(ctx, *args):
         return
      
     await ctx.send("**Downloading neccesary files...**")
-     
-    
      
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         print("Downloading audio now\n")
@@ -225,6 +234,7 @@ async def stop(ctx):
     else:
         await ctx.send("**Nothing playing!** :shrug:")
 
+
 @bot.command(brief="Search for video to play", description="Searching for any youtube video to play")
 async def search(ctx, *args):
     
@@ -233,6 +243,7 @@ async def search(ctx, *args):
     link = yt_firstresult(keywords)
     
     await play(ctx, link)
+
         
 @bot.command(brief="Set volume for bot", description="Updates bot volume.")
 async def volume(ctx, vol: str):
@@ -244,11 +255,12 @@ async def volume(ctx, vol: str):
         return 
 
     try:
-        if int(vol.strip("%"))/100 < 2.01:
-            voice.source.volume = int(vol.strip("%"))/100
+        if int(vol.strip("%")) / 100 < 2.01:
+            voice.source.volume = int(vol.strip("%")) / 100
         else:
             await ctx.send("**Volume too high... listening above 200% may damage your hearing**")
     except:
         await ctx.send("**Volume invalid** :shrug:")
+
     
 bot.run(TOKEN)
