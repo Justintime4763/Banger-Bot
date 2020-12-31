@@ -158,8 +158,8 @@ async def play(ctx, *args):
     voice = get(bot.voice_clients, guild=ctx.guild)
     
     try:
-        if os.path.isfile(os.path.join(src, "song.mp3")):
-            os.remove(os.path.join(src, "song.mp3"))
+        if os.path.isfile(os.path.join(src, str(ctx.guild.id) + "/", "song.mp3")):
+            os.remove(os.path.join(src, str(ctx.guild.id) + "/", "song.mp3"))
             print("Removed cached song\n")
     except:
         await ctx.send("ERROR; song currently playing; queueing is currently being developed")
@@ -181,9 +181,11 @@ async def play(ctx, *args):
         if file.endswith(".mp3"):
             name = file
             print(f"Renamed File: {file}\n")
-            os.rename(file, os.path.join(src, "song.mp3"))
+            if not os.path.isdir(os.path.join(src, str(ctx.guild.id) + "/")):
+                os.mkdir(os.path.join(src, str(ctx.guild.id) + "/"))
+            os.rename(file, os.path.join(src, str(ctx.guild.id) + "/", "song.mp3"))
              
-    voice.play(discord.FFmpegPCMAudio(os.path.join(src, "song.mp3")),
+    voice.play(discord.FFmpegPCMAudio(os.path.join(src, str(ctx.guild.id) + "/", "song.mp3")),
                after=lambda e: print(f"{name} has finished playing"))
      
     voice.source = discord.PCMVolumeTransformer(voice.source)
@@ -264,6 +266,10 @@ async def add_to_queue(ctx, url: str):
     global queue
     if queue is None:
         queue = {}
-        
+    try:
+        queue[ctx.guild.id].append(url)
+    except:
+        queue[ctx.guild.id] = [url]
+    
     
 bot.run(TOKEN)
