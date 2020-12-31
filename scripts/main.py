@@ -52,8 +52,11 @@ src = os.path.abspath('../src/')
 try:
     TOKEN = open('token.txt', 'r').read()
 except:
-    print("File does not exist; use your own token by deleting this try/except"
-          +" statement and just making the TOKEN variable equal to your own token")
+    print("File does not exist; a token.txt file will be created; put in your token there")
+    if not os.path.isfile(token.txt):
+        token_file = open("token.txt", 'w+')
+        token_file.close()
+        del token_file
     time.sleep(5)
     sys.exit(1)
      
@@ -170,7 +173,8 @@ async def play(ctx, *args):
         await ctx.send("Error; video larger than 6 minutes. This cap is in place "
                 +"because each video needs to downloaded to the computer, and large videos take up too much space.")
         return
-     
+    
+    #TODO debug statement remove when finished with section 
     await ctx.send("**Downloading neccesary files...**")
      
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -191,7 +195,6 @@ async def play(ctx, *args):
     voice.source = discord.PCMVolumeTransformer(voice.source)
     voice.source.volume = 1.0
      
-    nname = name.rsplit("-", 2)
     await ctx.send(f"**Playing** :notes: `{(video_name(url))}`** in {voice.channel}!**")
     print(f"[{ctx.guild}] Playing {video_name(url)} in {voice.channel}")
 
@@ -200,7 +203,7 @@ async def play(ctx, *args):
 async def pause(ctx):
     
     voice = get(bot.voice_clients, guild=ctx.guild)
-    if voice and voice.is_playing:
+    if voice and voice.is_playing():
         print(f"[{ctx.guild}] Music paused")
         voice.pause()
         await ctx.send("**Music paused!** :pause_button:")
@@ -225,7 +228,7 @@ async def resume(ctx):
 async def stop(ctx):
     
     voice = get(bot.voice_clients, guild=ctx.guild)
-    if voice and voice.is_playing:
+    if voice and voice.is_playing():
         print(f" [{ctx.guild}] Music stopped")
         voice.stop()
         await ctx.send("**Music stopped!** :mute:")
