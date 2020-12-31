@@ -134,7 +134,6 @@ async def leave(ctx):
                     +"you're in and plays a youtube video.", aliases=['p', 'P', 'Play'], category="Music")
 async def play(ctx, *args):
     
-    global queue
     url = args[0]
     
     if not (is_url(url)):
@@ -143,7 +142,7 @@ async def play(ctx, *args):
     
     voice = get(bot.voice_clients, guild=ctx.guild)
     
-    ### TODO ADD QUEUE HERE
+    # ## TODO ADD QUEUE HERE
     if not voice:
         try:
             if await join(ctx) == 0:
@@ -152,7 +151,7 @@ async def play(ctx, *args):
             pass
     else:
         if voice.is_playing():
-            #CALL Q FUNCTION HERE
+            # CALL Q FUNCTION HERE
             await ctx.send("**Bot already playing a video** :shrug:")
             return
         
@@ -259,8 +258,12 @@ async def volume(ctx, vol: str):
     except:
         await ctx.send("**Volume invalid** :shrug:")
 
-#NON-COMMAND ASYNC FUNCS
-async def add_to_queue(ctx, url: str):
-    pass
 
+# NON-COMMAND ASYNC FUNCS
+async def add_to_queue(ctx, url: str):
+    global queue
+    if queue is None:
+        queue = {}
+        
+    
 bot.run(TOKEN)
