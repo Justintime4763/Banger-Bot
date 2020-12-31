@@ -132,4 +132,4 @@ dmypy.json
 .pyre/
 
 #Music
-src/*.mp3
+src/*/*.mp3
