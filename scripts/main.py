@@ -1,4 +1,4 @@
-import discord, youtube_dl, os, time, sys, re
+import discord, youtube_dl, os, time, sys, re, time, asyncio
 from discord.ext import commands
 from discord.utils import get
 import urllib.request
@@ -14,6 +14,37 @@ ydl_opts = {
         'preferredquality': '192',
     }],
 }
+
+queue = {}
+
+
+def check_queue_and_play(ctx):
+    
+    guild_id = ctx.guild.id
+    
+    if queue[guild_id] == [] or queue[guild_id] is None or queue is None or len(queue[guild_id]) == 1:
+        return
+    
+    del queue[guild_id][0]
+    
+    coro = play(ctx, queue[guild_id][0])
+    fut = asyncio.run_coroutine_threadsafe(coro)
+    try:
+        fut.result()
+    except:
+        print("coroutine error")
+
+
+async def add_to_queue(ctx, url: str):
+    global queue
+    if not queue:
+        queue = {}
+    try:
+        queue[ctx.guild.id].append(url)
+    except:
+        queue[ctx.guild.id] = [url]
+    
+    return
 
 
 def video_size(url):
@@ -48,6 +79,8 @@ def is_url(s):
 
 
 src = os.path.abspath('../src/')
+if not os.path.isdir(src):
+    os.mkdir(src)
  
 try:
     TOKEN = open('token.txt', 'r').read()
@@ -155,7 +188,8 @@ async def play(ctx, *args):
     else:
         if voice.is_playing():
             # CALL Q FUNCTION HERE
-            await ctx.send("**Bot already playing a video** :shrug:")
+            await add_to_queue(ctx, url)
+            await ctx.send(f"**Added {video_name(url)} to queue!** :speaking_head:")
             return
         
     voice = get(bot.voice_clients, guild=ctx.guild)
@@ -174,7 +208,8 @@ async def play(ctx, *args):
                 +"because each video needs to downloaded to the computer, and large videos take up too much space.")
         return
     
-    #TODO debug statement remove when finished with section 
+    await add_to_queue(ctx, url)
+    # TODO debug statement remove when finished with section 
     await ctx.send("**Downloading neccesary files...**")
      
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -188,9 +223,9 @@ async def play(ctx, *args):
             if not os.path.isdir(os.path.join(src, str(ctx.guild.id) + "/")):
                 os.mkdir(os.path.join(src, str(ctx.guild.id) + "/"))
             os.rename(file, os.path.join(src, str(ctx.guild.id) + "/", "song.mp3"))
-             
+         
     voice.play(discord.FFmpegPCMAudio(os.path.join(src, str(ctx.guild.id) + "/", "song.mp3")),
-               after=lambda e: print(f"{name} has finished playing"))
+               after=check_queue_and_play(ctx))
      
     voice.source = discord.PCMVolumeTransformer(voice.source)
     voice.source.volume = 1.0
@@ -198,7 +233,7 @@ async def play(ctx, *args):
     await ctx.send(f"**Playing** :notes: `{(video_name(url))}`** in {voice.channel}!**")
     print(f"[{ctx.guild}] Playing {video_name(url)} in {voice.channel}")
 
-
+    
 @bot.command(brief="Pauses music", description="Pauses currently playing video in channel.")
 async def pause(ctx):
     
@@ -264,15 +299,4 @@ async def volume(ctx, vol: str):
         await ctx.send("**Volume invalid** :shrug:")
 
 
-# NON-COMMAND ASYNC FUNCS
-async def add_to_queue(ctx, url: str):
-    global queue
-    if queue is None:
-        queue = {}
-    try:
-        queue[ctx.guild.id].append(url)
-    except:
-        queue[ctx.guild.id] = [url]
-    
-    
 bot.run(TOKEN)
