@@ -9,4 +9,4 @@ All dependencies used:
 - discord.py[voice]   (https://pypi.org/project/discord.py/)
 - youtube_dl    (https://pypi.org/project/youtube_dl/)
 
-To install use ``pip install "discord.py[voice]" "youtube_dl"``.
+To install needed dependencies use ``pip install "discord.py[voice]" "youtube_dl"``.
