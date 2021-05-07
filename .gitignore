@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+#scripts
+scripts/run.sh
+
 #Init
 token.txt
 

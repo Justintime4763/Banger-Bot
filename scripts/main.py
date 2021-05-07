@@ -15,6 +15,7 @@ ydl_opts = {
     }],
 }
 
+args=sys.argv
 
 def video_size(url):
     with youtube_dl.YoutubeDL() as ydl:
@@ -46,6 +47,11 @@ def is_url(s):
     
     return re.match(regex, s) is not None
 
+def is_override(args):
+    if "--override-video-size" or "--override-video-size " in args:
+        return True
+    else:
+        return False
 
 src = os.path.abspath('../src/')
  
@@ -167,7 +173,7 @@ async def play(ctx, *args):
         return
      
     # Checking if audio is longer than 6 minutes
-    if video_size(url) > (6 * 60):
+    if video_size(url) > (6 * 60) and not is_override(args):
         await ctx.send("Error; video larger than 6 minutes. This cap is in place "
                 +"because each video needs to downloaded to the computer, and large videos take up too much space.")
         return
