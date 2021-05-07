@@ -56,7 +56,7 @@ def is_override(args):
 src = os.path.abspath('../src/')
  
 try:
-    TOKEN = open('token.txt', 'r').read()
+    TOKEN = open('token.env', 'r').read()
 except:
     print("File does not exist; use your own token by deleting this try/except"
           +" statement and just making the TOKEN variable equal to your own token")
